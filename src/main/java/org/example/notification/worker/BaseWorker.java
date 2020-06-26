@@ -14,7 +14,7 @@ public abstract class BaseWorker {
 
     private Logger LOGGER = LoggerFactory.getLogger(getClass().getName());
 
-    public BaseWorker(ExternalTaskClient externalTaskClient, String topic) {
+    public BaseWorker(String topic) {
         // bootstrap the client
         this.externalTaskClient = ExternalTaskClient.create()
                 .baseUrl("http://localhost:8080/engine-rest")
@@ -25,7 +25,8 @@ public abstract class BaseWorker {
         this.topic = topic;
     }
 
-    public BaseWorker(String topic) {
+    public BaseWorker(ExternalTaskClient externalTaskClient, String topic) {
+        this.externalTaskClient = externalTaskClient;
         this.topic = topic;
     }
 
@@ -35,6 +36,8 @@ public abstract class BaseWorker {
         // subscribe to the topic
         TopicSubscriptionBuilder subscriptionBuilder = externalTaskClient
                 .subscribe("notificationTweet");
+
+        subscriptionBuilder.handler(this::handleTask).open();
     }
 
     protected abstract void handleTask(ExternalTask externalTask, ExternalTaskService externalTaskService);
